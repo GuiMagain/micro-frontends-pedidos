@@ -12,7 +12,7 @@ A aplicação de pedidos foi dividida em três projetos independentes:
 
 ## Versões
 
-- Next.js **14.2.15** com **Pages Router** (compatível com 12, 13, 14 e 15 segundo a documentação do Module Federation; App Router não é usado).
+- Next.js **14.2.15** com **Pages Router** (o enunciado indica as versões 12 a 15; App Router não é usado).
 - React **18.3.1**
 - Module Federation via `@module-federation/nextjs-mf` 7.0.8
 - webpack 5.90.0 (mesma versão embutida no Next 14.2.15, necessária para o plugin)
@@ -32,7 +32,7 @@ micro-frontends-pedidos/
 
 Requisito: Node.js 18.17 ou superior.
 
-Instale as dependências em cada projeto:
+Instale as dependências e gere o build em cada projeto:
 
 ```bash
 cd micro-cardapio && npm install && npm run build && cd ..
@@ -54,6 +54,10 @@ cd container-app && npm start        # http://localhost:3000
 ```
 
 Os micros precisam estar em modo produção (`npm run build` + `npm start`), porque o `remoteEntry.js` só é gravado em disco no build. No modo `npm run dev` o container não consegue carregá-los.
+
+Se algum micro não estiver rodando, o container continua no ar e mostra uma mensagem de erro apenas no bloco correspondente.
+
+Se você alterar o código de um micro, rode `npm run build` novamente nele e reinicie o `npm start`.
 
 Acesse **http://localhost:3000**.
 
@@ -89,8 +93,8 @@ A comunicação é feita por **eventos globais do navegador**, sem acoplamento d
    ```js
    window.dispatchEvent(new CustomEvent('pedido:adicionar', { detail: prato }));
    ```
-2. O Micro Pedido escuta esse evento em um `useEffect`, soma a quantidade do prato se ele já existir no pedido e recalcula o total.
-3. O listener é removido no cleanup do `useEffect`, para evitar vazamento de memória ao desmontar o componente.
+2. O Micro Pedido escuta esse evento em `componentDidMount`, soma a quantidade do prato se ele já existir no pedido e recalcula o total.
+3. O listener é removido em `componentWillUnmount`, para evitar vazamento de memória ao desmontar o componente.
 
 Como os dois micros não se conhecem, qualquer um pode ser trocado ou reimplantado sem alterar o outro, desde que o nome do evento e o formato de `detail` sejam mantidos.
 
